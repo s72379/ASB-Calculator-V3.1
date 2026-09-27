@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASB & ASNB Complete Suite: Calculators, Scenarios & Zakat</title>
+    <!-- Include Chart.js for visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include jsPDF for simple PDF report export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            margin: 0 0 8px 0;
+            color: var(--primary-dark);
+        }
+        header p {
+            color: var(--text-light);
+            margin: 0;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+        }
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-dark);
+            font-size: 1.25rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+        button.secondary {
+            background-color: var(--success);
+            margin-top: 10px;
+        }
+        button.secondary:hover {
+            background-color: #059669;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .result-box {
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        .result-box.profit {
+            border-left-color: var(--success);
+        }
+        .result-box.warning {
+            border-left-color: var(--warning);
+        }
+        .result-box.danger {
+            border-left-color: var(--danger);
+        }
+        .result-box h3 {
+            margin: 0 0 6px 0;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+        .result-box .value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            margin-top: 20px;
+        }
+        table.asnb-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        table.asnb-table th, table.asnb-table td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        table.asnb-table th {
+            background-color: #f1f5f9;
+            color: var(--text);
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .badge-fixed { background-color: #e0f2fe; color: #0369a1; }
+        .badge-variable { background-color: #fef3c7; color: #b45309; }
+        .scrollable-table {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        @media(max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>ASB & ASNB Investment Suite</h1>
+        <p>Fixed-Price Strategy, Scenario Analysis, Projections, and Zakat Calculators</p>
+    </header>
+
+    <!-- SECTION 1: ASNB Fund Categories Reference -->
+    <div class="card">
+        <h2>Types of ASNB Funds (Overview)</h2>
+        <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0;">ASNB funds are split into Fixed-Price funds (pegged at RM 1.00/unit) and Variable-Price funds (fluctuates based on NAV).</p>
+        <table class="asnb-table">
+            <thead>
+                <tr>
+                    <th>Fund Category</th>
+                    <th>Examples</th>
+                    <th>Price Structure</th>
+                    <th>Risk Profile</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Fixed-Price Funds</strong></td>
+                    <td>ASB, ASB 2, ASM, ASM 2 Wawasan, ASM 3</td>
+                    <td><span class="badge badge-fixed">Fixed @ RM 1.00</span></td>
+                    <td>Low Risk / Capital Guaranteed</td>
+                </tr>
+                <tr>
+                    <td><strong>Variable-Price Funds</strong></td>
+                    <td>ASN Equity 2, ASN Imbang, ASN Sara, ASN Global</td>
+                    <td><span class="badge badge-variable">Floating (NAV based)</span></td>
+                    <td>Medium to High Risk / Growth potential</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SECTION 2: Fixed-Price Strategy & Scenario Analysis Calculator -->
+    <div class="card">
+        <h2>1. Fixed-Price ASB Strategy & Scenario Analysis (Person A vs Person B)</h2>
+        <div class="form-grid">
+            <div class="input-group">
+                <label for="monthlyAmount">Person A Monthly (RM)</label>
+                <input type="number" id="monthlyAmount" value="200">
+            </div>
+            <div class="input-group">
+                <label for="annualLumpSum">Person B Yearly Lump-Sum (RM)</label>
+                <input type="number" id="annualLumpSum" value="2400">
+            </div>
+            <div class="input-group">
+                <label for="dividendRate">Expected Dividend Rate (%)</label>
+                <input type="number" step="0.05" id="dividendRate" value="5.75">
+            </div>
+            <div class="input-group">
+                <label for="years">Investment Duration (Years)</label>
+                <input type="number" id="years" value="5">
+            </div>
+        </div>
+        <button onclick="calculateAll()">Update All Calculations & Charts</button>
+    </div>
+
+    <!-- Two Column Results Comparison -->
+    <div class="two-column">
+        <div class="card" style="margin-bottom:0;">
+            <h2>Person A (Monthly DCA)</h2>
+            <div class="results-grid" style="grid-template-columns: 1fr;">
+                <div class="result-box">
+                    <h3>Total Units Held</h3>
+                    <div class="value" id="aUnits">0.00 Units</div>
+                </div>
+                <div class="result-box">
+                    <h3>Total Invested Capital</h3>
+                    <div class="value" id="aInvested">RM 0.00</div>
+                </div>
+                <div class="result-box">
+                    <h3>Total Value (Principal + Div)</h3>
+                    <div class="value" id="aTotalValue">RM 0.00</div>
+                </div>
+                <div class="result-box profit">
+                    <h3>Total Profit / Loss</h3>
+                    <div class="value" id="aProfit">RM 0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:0;">
+            <h2>Person B (Nov Lump-Sum)</h2>
+            <div class="results-grid" style="grid-template-columns: 1fr;">
+                <div class="result-box">
+                    <h3>Total Units Held</h3>
+                    <div class="value" id="bUnits">0.00 Units</div>
+                </div>
+                <div class="result-box">
+                    <h3>Total Invested Capital</h3>
+                    <div class="value" id="bInvested">RM 0.00</div>
+                </div>
+                <div class="result-box">
+                    <h3>Total Value (Principal + Div)</h3>
+                    <div class="value" id="bTotalValue">RM 0.00</div>
+                </div>
+                <div class="result-box profit">
+                    <h3>Total Profit / Loss</h3>
+                    <div class="value" id="bProfit">RM 0.00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenario Analysis Card (Best, Worst, Expected) -->
+    <div class="card" style="margin-top: 24px;">
+        <h2>Investment Scenario Analysis (Sensitivity Matrix)</h2>
+        <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0;">Compares Person A's outcome under conservative, expected, and optimistic dividend return scenarios over the chosen duration.</p>
+        <div class="results-grid">
+            <div class="result-box warning">
+                <h3>Worst-Case (4.00%)</h3>
+                <div class="value" id="scenWorst">RM 0.00</div>
+            </div>
+            <div class="result-box">
+                <h3>Expected Case (Base Rate)</h3>
+                <div class="value" id="scenExpected">RM 0.00</div>
+            </div>
+            <div class="result-box profit">
+                <h3>Best-Case (7.00%)</h3>
+                <div class="value" id="scenBest">RM 0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visual Chart Card -->
+    <div class="card">
+        <h2>Growth Visualization & Long-Term Projections</h2>
+        <div class="chart-container">
+            <canvas id="growthChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Yearly Breakdown Table Card -->
+    <div class="card">
+        <h2>Yearly & Monthly Investment Breakdown Table</h2>
+        <div class="scrollable-table">
+            <table class="asnb-table" id="breakdownTable">
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Person A Principal (RM)</th>
+                        <th>Person A Dividend (RM)</th>
+                        <th>Person A Ending Value (RM)</th>
+                        <th>Person B Principal (RM)</th>
+                        <th>Person B Dividend (RM)</th>
+                        <th>Person B Ending Value (RM)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populated dynamically via script -->
+                </tbody>
+            </table>
+        </div>
+        <button class="secondary" onclick="exportPDFReport()">Export Summary Report as PDF</button>
+    </div>
+
+    <!-- SECTION 3: Variable-Price ASNB Fund Calculator -->
+    <div class="card">
+        <h2>2. Variable-Price ASNB Fund Calculator (NAV-Based)</h2>
+        <div class="form-grid">
+            <div class="input-group">
+                <label for="varInvestment">Total Investment Amount (RM)</label>
+                <input type="number" id="varInvestment" value="5000">
+            </div>
+            <div class="input-group">
+                <label for="buyNav">Purchase NAV Price per Unit (RM)</label>
+                <input type="number" step="0.001" id="buyNav" value="1.050">
+            </div>
+            <div class="input-group">
+                <label for="currentNav">Current / Selling NAV Price (RM)</label>
+                <input type="number" step="0.001" id="currentNav" value="1.120">
+            </div>
+            <div class="input-group">
+                <label for="varDistRate">Annual Distribution Rate (%)</label>
+                <input type="number" step="0.05" id="varDistRate" value="4.50">
+            </div>
+        </div>
+        <div class="results-grid">
+            <div class="result-box">
+                <h3>Units Purchased</h3>
+                <div class="value" id="varUnits">0.00 Units</div>
+            </div>
+            <div class="result-box">
+                <h3>Current Market Value</h3>
+                <div class="value" id="varMarketVal">RM 0.00</div>
+            </div>
+            <div class="result-box">
+                <h3>Estimated Annual Dividend</h3>
+                <div class="value" id="varDividend">RM 0.00</div>
+            </div>
+            <div class="result-box profit">
+                <h3>Total Gain / Loss (Capital + Div)</h3>
+                <div class="value" id="varTotalGain">RM 0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 4: Wealth / General Savings Zakat Calculator -->
+    <div class="card">
+        <h2>3. ASNB & Savings Zakat Calculator (Class A / Wealth Zakat)</h2>
+        <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0;">Calculates 2.5% Zakat on total accumulated wealth once it exceeds the Nisab threshold.</p>
+        <div class="form-grid">
+            <div class="input-group">
+                <label for="zakatWealth">Total Eligible Balance (RM)</label>
+                <input type="number" id="zakatWealth" value="30000">
+            </div>
+            <div class="input-group">
+                <label for="nisabThreshold">Current Nisab Threshold (RM)</label>
+                <input type="number" id="nisabThreshold" value="23500">
+            </div>
+        </div>
+        <div class="results-grid">
+            <div class="result-box">
+                <h3>Nisab Status</h3>
+                <div class="value" id="zakatStatus">Above Nisab</div>
+            </div>
+            <div class="result-box warning">
+                <h3>Zakat Payable (2.5%)</h3>
+                <div class="value" id="zakatPayable">RM 0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 5: Class B Zakat Dividend Deduction Simulator -->
+    <div class="card">
+        <h2>4. ASNB Class B Zakat (Income Distribution Deduction) Simulator</h2>
+        <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0;">Shows how Class B auto-deducts 2.57% Zakat directly from your dividend payout.</p>
+        <div class="form-grid">
+            <div class="input-group">
+                <label for="classbPrincipal">Total ASB Investment (RM)</label>
+                <input type="number" id="classbPrincipal" value="10000">
+            </div>
+            <div class="input-group">
+                <label for="classbGrossRate">Gross Dividend Rate (%)</label>
+                <input type="number" step="0.05" id="classbGrossRate" value="5.75">
+            </div>
+            <div class="input-group">
+                <label for="classbZakatRate">Class B Zakat Rate (%)</label>
+                <input type="number" step="0.01" id="classbZakatRate" value="2.57">
+            </div>
+        </div>
+        <div class="results-grid">
+            <div class="result-box">
+                <h3>Gross Dividend (RM)</h3>
+                <div class="value" id="cbGrossDiv">RM 0.00</div>
+            </div>
+            <div class="result-box warning">
+                <h3>Zakat Deducted (RM)</h3>
+                <div class="value" id="cbZakatDeducted">RM 0.00</div>
+            </div>
+            <div class="result-box profit">
+                <h3>Net Dividend Received (RM)</h3>
+                <div class="value" id="cbNetDiv">RM 0.00</div>
+            </div>
+            <div class="result-box profit">
+                <h3>Effective Net Rate (%)</h3>
+                <div class="value" id="cbNetRate">0.00%</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let myChart = null;
+let lastResults = {};
+
+function calculateAll() {
+    const monthlyAmt = parseFloat(document.getElementById('monthlyAmount').value) || 0;
+    const lumpSumAmt = parseFloat(document.getElementById('annualLumpSum').value) || 0;
+    const baseRate = parseFloat(document.getElementById('dividendRate').value) || 0;
+    const rate = baseRate / 100;
+    const totalYears = parseInt(document.getElementById('years').value) || 1;
+
+    let labels = [];
+    let dataA = [];
+    let dataB = [];
+    let tableRowsHTML = '';
+
+    // --- Simulation for Person A ---
+    let balanceA = 0;
+    let totalInvestedA = 0;
+    
+    // --- Simulation for Person B ---
+    let balanceB = 0;
+    let totalInvestedB = 0;
+
+    let yearlyRecordsA = [];
+    let yearlyRecordsB = [];
+
+    for (let y = 1; y <= totalYears; y++) {
+        let yearlyDividendA = 0;
+        for (let m = 1; m <= 12; m++) {
+            balanceA += monthlyAmt;
+            totalInvestedA += monthlyAmt;
+            yearlyDividendA += balanceA * (rate / 12);
+        }
+        balanceA += yearlyDividendA;
+        yearlyRecordsA.push({ invested: totalInvestedA, dividend: yearlyDividendA, ending: balanceA });
+        
+        let yearlyDividendB = 0;
+        for (let m = 1; m <= 12; m++) {
+            if (m === 11) {
+                balanceB += lumpSumAmt;
+                totalInvestedB += lumpSumAmt;
+            }
+            yearlyDividendB += balanceB * (rate / 12);
+        }
+        balanceB += yearlyDividendB;
+        yearlyRecordsB.push({ invested: totalInvestedB, dividend: yearlyDividendB, ending: balanceB });
+
+        labels.push(`Year ${y}`);
+        dataA.push(balanceA);
+        dataB.push(balanceB);
+
+        tableRowsHTML += `<tr>
+            <td>Year ${y}</td>
+            <td>${formatRM(totalInvestedA)}</td>
+            <td>${formatRM(yearlyDividendA)}</td>
+            <td><strong>${formatRM(balanceA)}</strong></td>
+            <td>${formatRM(totalInvestedB)}</td>
+            <td>${formatRM(yearlyDividendB)}</td>
+            <td><strong>${formatRM(balanceB)}</strong></td>
+        </tr>`;
+    }
+
+    document.getElementById('breakdownTable').querySelector('tbody').innerHTML = tableRowsHTML;
+
+    let profitA = balanceA - totalInvestedA;
+    let profitB = balanceB - totalInvestedB;
+
+    // --- Render Fixed-Price Results ---
+    document.getElementById('aUnits').innerText = balanceA.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " Units";
+    document.getElementById('aInvested').innerText = formatRM(totalInvestedA);
+    document.getElementById('aTotalValue').innerText = formatRM(balanceA);
+    document.getElementById('aProfit').innerText = formatRM(profitA);
+
+    document.getElementById('bUnits').innerText = balanceB.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " Units";
+    document.getElementById('bInvested').innerText = formatRM(totalInvestedB);
+    document.getElementById('bTotalValue').innerText = formatRM(balanceB);
+    document.getElementById('bProfit').innerText = formatRM(profitB);
+
+    // --- Scenario Analysis Calculations ---
+    const valWorst = runSimpleSimulation(monthlyAmt, 0.04, totalYears);
+    const valExpected = balanceA;
+    const valBest = runSimpleSimulation(monthlyAmt, 0.07, totalYears);
+
+    document.getElementById('scenWorst').innerText = formatRM(valWorst);
+    document.getElementById('scenExpected').innerText = formatRM(valExpected);
+    document.getElementById('scenBest').innerText = formatRM(valBest);
+
+    // --- Render Chart ---
+    renderChart(labels, dataA, dataB);
+
+    // 2. Variable-Price Calculation
+    const varInv = parseFloat(document.getElementById('varInvestment').value) || 0;
+    const buyNav = parseFloat(document.getElementById('buyNav').value) || 1;
+    const currentNav = parseFloat(document.getElementById('currentNav').value) || 1;
+    const varDistRate = (parseFloat(document.getElementById('varDistRate').value) || 0) / 100;
+
+    const varUnits = varInv / buyNav;
+    const varMarketVal = varUnits * currentNav;
+    const varDividend = varMarketVal * varDistRate;
+    const capitalGain = varMarketVal - varInv;
+    const varTotalGain = capitalGain + varDividend;
+
+    document.getElementById('varUnits').innerText = varUnits.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " Units";
+    document.getElementById('varMarketVal').innerText = formatRM(varMarketVal);
+    document.getElementById('varDividend').innerText = formatRM(varDividend);
+    document.getElementById('varTotalGain').innerText = formatRM(varTotalGain);
+
+    // 3. Wealth Zakat Calculation
+    const zakatWealth = parseFloat(document.getElementById('zakatWealth').value) || 0;
+    const nisabThreshold = parseFloat(document.getElementById('nisabThreshold').value) || 0;
+    let zakatPayableAmt = 0;
+
+    if (zakatWealth >= nisabThreshold) {
+        zakatPayableAmt = zakatWealth * 0.025;
+        document.getElementById('zakatStatus').innerText = "Above Nisab (Obligated)";
+        document.getElementById('zakatPayable').innerText = formatRM(zakatPayableAmt);
+    } else {
+        document.getElementById('zakatStatus').innerText = "Below Nisab (Not Obligated)";
+        document.getElementById('zakatPayable').innerText = formatRM(0);
+    }
+
+    // 4. Class B Zakat Dividend Deduction Calculation
+    const cbPrincipal = parseFloat(document.getElementById('classbPrincipal').value) || 0;
+    const cbGrossRate = parseFloat(document.getElementById('classbGrossRate').value) || 0;
+    const cbZakatRate = parseFloat(document.getElementById('classbZakatRate').value) || 0;
+
+    const grossDiv = cbPrincipal * (cbGrossRate / 100);
+    const zakatDeducted = grossDiv * (cbZakatRate / 100);
+    const netDiv = grossDiv - zakatDeducted;
+    const netRate = cbGrossRate - (cbGrossRate * (cbZakatRate / 100));
+
+    document.getElementById('cbGrossDiv').innerText = formatRM(grossDiv);
+    document.getElementById('cbZakatDeducted').innerText = formatRM(zakatDeducted);
+    document.getElementById('cbNetDiv').innerText = formatRM(netDiv);
+    document.getElementById('cbNetRate').innerText = netRate.toFixed(2) + "%";
+
+    // Save for PDF Export
+    lastResults = {
+        monthlyAmt, totalYears, baseRate, balanceA, totalInvestedA, profitA,
+        valWorst, valExpected, valBest, varMarketVal, varTotalGain, zakatPayableAmt
+    };
+}
+
+function runSimpleSimulation(monthlyAmt, rate, totalYears) {
+    let balance = 0;
+    for (let y = 1; y <= totalYears; y++) {
+        let yearlyDiv = 0;
+        for (let m = 1; m <= 12; m++) {
+            balance += monthlyAmt;
+            yearlyDiv += balance * (rate / 12);
+        }
+        balance += yearlyDiv;
+    }
+    return balance;
+}
+
+function formatRM(amount) {
+    return 'RM ' + amount.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function renderChart(labels, dataA, dataB) {
+    const ctx = document.getElementById('growthChart').getContext('2d');
+    
+    if (myChart) {
+        myChart.destroy();
+    }
+
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Person A (Monthly DCA Total Value)',
+                    data: dataA,
+                    borderColor: '#0284c7',
+                    backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.2
+                },
+                {
+                    label: 'Person B (Nov Lump-Sum Total Value)',
+                    data: dataB,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'RM ' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function exportPDFReport() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("ASB Investment & Zakat Summary Report", 14, 20);
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 28);
+
+    doc.setLineWidth(0.5);
+    doc.line(14, 32, 196, 32);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("1. Fixed-Strategy Performance (Person A vs Person B)", 14, 40);
+    doc.setFont("helvetica", "normal");
+    doc.text(`- Investment Duration: ${lastResults.totalYears} Years`, 18, 48);
+    doc.text(`- Expected Dividend Rate: ${lastResults.baseRate}%`, 18, 55);
+    doc.text(`- Person A (Monthly DCA) Ending Value: ${formatRM(lastResults.balanceA)} (Profit: ${formatRM(lastResults.profitA)})`, 18, 62);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("2. Scenario Analysis Summary", 14, 75);
+    doc.setFont("helvetica", "normal");
+    doc.text(`- Worst-Case Scenario (4.0% return): ${formatRM(lastResults.valWorst)}`, 18, 83);
+    doc.text(`- Expected Scenario (${lastResults.baseRate}% return): ${formatRM(lastResults.valExpected)}`, 18, 90);
+    doc.text(`- Best-Case Scenario (7.0% return): ${formatRM(lastResults.valBest)}`, 18, 97);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("3. Asset & Zakat Overview", 14, 110);
+    doc.setFont("helvetica", "normal");
+    doc.text(`- Variable-Price Fund Market Valuation: ${formatRM(lastResults.varMarketVal)}`, 18, 118);
+    doc.text(`- Wealth Zakat Payable (Class A): ${formatRM(lastResults.zakatPayableAmt)}`, 18, 125);
+
+    doc.save("ASB_Investment_Report.pdf");
+}
+
+window.onload = function() {
+    calculateAll();
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('input', calculateAll);
+    });
+};
+</script>
+
+</body>
+</html>
